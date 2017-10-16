@@ -19,6 +19,143 @@ public class GraphProperties {
     public int[][] adjacencyMatrix;
     public int[][] distanceMatrix;
     public Vector<VertexPair> vpList;
+    public int path[];
+    
+    public boolean isComplete(Vector<Vertex> vList, Vector<Edge> eList) {
+    	return eList.size() == (vList.size() * (vList.size() - 1)) / 2;
+    }
+    
+    /** 
+     * isHamiltonian() checks if the given graph is hamiltonian--if it contains a hamiltonian cycle
+     * @param vList the list of vertices in the graph
+     * @param matrix the adjacency matrix obtained from the graph
+     * @return true if the graph is hamiltonian, false if not
+     */
+    public boolean isHamiltonian(Vector<Vertex> vList, int[][] matrix) {
+    	// Array of indices of vertices
+    	path = new int[matrix.length];
+    	
+    	// Initialize hamiltonian path
+    	for(int i = 0; i < matrix.length; i++) {
+    		path[i] = -1;
+    	}
+    	
+    	// Set first vertex of path to vertex in vList with index 0
+    	path[0] = 0;
+    	
+    	if(recursiveHamiltonian(matrix, path, 1) == false) {
+    		System.out.println("Solution does not exist.");
+    		return false;
+    	}
+    	
+    	return true;
+    }
+    
+    private boolean isSafe(int v, int[][] matrix, int path[], int currV) {
+    	// Check if the current vertex is adjacent to previous vertex
+    	if(matrix[path[currV - 1]][v] == 0) {
+    		return false;
+    	}
+    	
+    	// Check if the current vertex is already in the path
+    	for(int i = 0; i < currV; i++) {
+    		if(path[i] == v) return false;
+    	}
+    	
+    	return true;
+    }
+    
+    private boolean recursiveHamiltonian(int[][] matrix, int[] path, int currV) {
+    	// If index of current vertex is the length of the matrix, end the recursion
+    	if(currV == matrix.length) {
+    		// If there is an edge between the last vertex and the starting vertex
+    		if(matrix[path[currV - 1]][path[0]] == 1) {
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	}
+    	
+    	// Choose other vertices to test if graph is Hamiltonian.
+    	for(int i = 1; i < matrix.length; i++) {
+    		// Check if current vertex passes the test
+    		if(isSafe(i, matrix, path, currV)) {
+    			path[currV] = i;
+    			if(recursiveHamiltonian(matrix, path, currV + 1) == true) {
+    				return true;
+    			}
+    			
+    			// If adding vertex i doesn't lead to a solution, then remove it
+    			path[currV] = -1;
+    		}
+    	}
+    	
+    	// If no vertex can be added to Hamiltonian cycle, return false
+    	return false;
+    }
+    
+    
+    /**
+     * @author Cess
+     * This function determines if a graph is Eulerian based on the degree of each node.
+     * @param vList contains all vertices of the graph.
+     * @return The function returns true if the graph is Eulerian. 
+     */
+    public boolean isEulerian(Vector<Vertex> vList){
+    	for(int i=0; i<vList.size(); i++){
+    		if(vList.get(i).getDegree() %2 == 0){
+    			continue;
+    		} else return false;
+    	} return true;
+    }
+    
+    /**
+     * @author Cess
+     * This function visits each vertex and determines if a cycle can be formed from that vertex.
+     * @param vList contains all vertices of the graph.
+     * @return The function returns true if the graph contains a cycle.
+     */
+    public boolean isCyclic(Vector<Vertex> vList){
+    	Boolean visited[] = new Boolean[vList.size()];
+    	for (int i=0; i<vList.size(); i++){
+    		visited[i] = false;
+    	}
+    	
+    	for(int i=0; i<vList.size(); i++){
+    		if(!visited[i]){
+    			if(isCyclicUtil(vList, i, visited, -1)){
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * @author Cess
+     * This function is a recursive function used by determineIfGraphIsCyclic() to determine if a vertex is part of cycle.
+     * @param vList contains all vertices of the graph.
+     * @param v is the position of the vertex in vList.
+     * @param visited[] is a boolean array. visited[] is true if a vertex is already checked if it contains a cycle.
+     * @param parent is the position of the vertex which was recently visited that is adjacent to the current vertex. 
+     * @return The function returns true if a cycle is found.
+     */
+    private boolean isCyclicUtil(Vector<Vertex> vList, int v, Boolean[] visited, int parent){
+    	visited[v] = true;
+    	
+    	for (int i=0; i<vList.size(); i++){
+    		if(vList.get(i).connectedToVertex(vList.get(v))){
+    			if(!visited[i]){
+    				if(isCyclicUtil(vList, i, visited, v)){
+    					return true;
+    				}
+    			}
+    			else if (i != parent)
+        			return true;
+    		}
+ 
+    	} return false;
+    }
 
     public int[][] generateAdjacencyMatrix(Vector<Vertex> vList, Vector<Edge> eList) {
         adjacencyMatrix = new int[vList.size()][vList.size()];

@@ -35,6 +35,10 @@ public class Canvas {
     private Vector<Vertex> vertexList;
     private Vector<Edge> edgeList;
     private GraphProperties gP = new GraphProperties();
+    private boolean isHamiltonian;
+    private boolean isComplete;
+    private boolean isCyclic;
+    private boolean isEulerian;
     /////////////
 
     public Canvas(String title, int width, int height, Color bgColour) {
@@ -331,7 +335,19 @@ public class Canvas {
                         vertexList.get(vertexList.indexOf(v)).wasClicked = true;
                     }
                     reloadVertexConnections(matrix, vertexList);
-
+                    
+                    //hamiltonian
+                    isHamiltonian = gP.isHamiltonian(vertexList, matrix);
+                    
+                    //complete
+                    isComplete = gP.isComplete(vertexList, edgeList);
+                    
+                    //eulerian
+                    isEulerian = gP.isEulerian(vertexList);
+                    
+                    //cyclic
+                    isCyclic = gP.isCyclic(vertexList);
+                    
                     //distance
                     gP.generateDistanceMatrix(vertexList);
 
@@ -453,10 +469,35 @@ public class Canvas {
                     g.drawImage(canvasImage2, 0, 0, null); //layer 1
                     drawString("Graph disconnects when nodes in color red are removed.", 100, height - 30, 20);
                     g.drawString("See output console for Diameter of Graph", 100, height / 2 + 50);
+                    
+                    if(isEulerian){
+                    	g.drawString("The graph is eulerian.", 100, height / 2 + 60);
+                    } else {
+                    	g.drawString("The graph is not eulerian.", 100, height / 2 + 60);
+                    }
+                    
+                    if(isHamiltonian) {
+                    	g.drawString("The graph is hamiltonian.", 100, height / 2 + 70);
+                    } else {
+                    	g.drawString("The graph is not hamiltonian.", 100, height / 2 + 70);
+                    }
+                    
+                    if(isComplete) {
+                    	g.drawString("The graph is a complete graph.", 100, height / 2 + 80);
+                    } else {
+                    	g.drawString("The graph is not a complete graph.", 100, height / 2 + 80);
+                    }
+                    
+                    if(isCyclic) {
+                    	g.drawString("The graph is cyclic.", 100, height / 2 + 90);
+                    } else {
+                    	g.drawString("The graph is acyclic.", 100, height / 2 + 90);
+                    }
+                    
                     g.drawImage(canvasImage.getScaledInstance(width / 2, height / 2, Image.SCALE_SMOOTH), 0, 0, null); //layer 1
                     g.draw3DRect(0, 0, width / 2, height / 2, true);
                     g.setColor(Color.black);
-
+                    
                     break;
                 }
             }
