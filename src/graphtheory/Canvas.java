@@ -538,9 +538,9 @@ public class Canvas {
                     }
                     
                     if(isTree) {
-                    	g.drawString("The graph is a tree.", 100, height / 2 + 100);
+                    	g.drawString("The graph is a tree.", 100, height / 2 + 110);
                     } else {
-                    	g.drawString("The graph is not a tree.", 100, height / 2 + 100);
+                    	g.drawString("The graph is not a tree.", 100, height / 2 + 110);
                     }
                     
                     g.drawImage(canvasImage.getScaledInstance(width / 2, height / 2, Image.SCALE_SMOOTH), 0, 0, null); //layer 1
