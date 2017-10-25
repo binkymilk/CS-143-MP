@@ -39,6 +39,8 @@ public class Canvas {
     private boolean isComplete;
     private boolean isCyclic;
     private boolean isEulerian;
+    private boolean isTree;
+    private boolean isConnected; 
     /////////////
 
     public Canvas(String title, int width, int height, Color bgColour) {
@@ -62,6 +64,7 @@ public class Canvas {
         JMenu menuOptions1 = new JMenu("File");
         JMenu menuOptions2 = new JMenu("Extras");
         JMenu menuOptions3 = new JMenu("Window");
+        JMenu menuOptions4 = new JMenu("Centrality");
 
         JMenuItem item = new JMenuItem("Add Vertex");
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
@@ -101,11 +104,20 @@ public class Canvas {
         item = new JMenuItem("Properties");
         item.addActionListener(new MenuListener());
         menuOptions3.add(item);
+        
+        item = new JMenuItem("Degree");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item);
 
+        item = new JMenuItem("Betweenness");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item); 
+        
         menuBar.add(menuOptions1);
         menuBar.add(menuOptions);
         menuBar.add(menuOptions2);
         menuBar.add(menuOptions3);
+        menuBar.add(menuOptions4);
 
         frame.setJMenuBar(menuBar);
 
@@ -348,6 +360,12 @@ public class Canvas {
                     //cyclic
                     isCyclic = gP.isCyclic(vertexList);
                     
+                    //tree
+                    isTree = gP.isTree(vertexList, edgeList);
+                    
+                    //connected
+                    isConnected = gP.graphConnectivity(vertexList);
+                    
                     //distance
                     gP.generateDistanceMatrix(vertexList);
 
@@ -357,7 +375,15 @@ public class Canvas {
                 }
                 erase();
             }
-
+            else if (command.equals("Degree")) {
+                selectedWindow = 2;
+                erase();
+            }
+            else if (command.equals("Betweenness")) {
+                selectedWindow = 3;
+                erase();
+            }
+            
             refresh();
         }
     }
@@ -455,14 +481,25 @@ public class Canvas {
         public void paint(Graphics g) {
             switch (selectedWindow) {
                 case 0: {   //graph window
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                        v.isDegree = false;
+                        v.wasClicked = false;
+                    }
                     graphic.drawString("Vertex Count=" + vertexList.size() +
                             "  Edge Count=" + edgeList.size() +
                             "  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
                     g.drawImage(canvasImage, 0, 0, null); //layer 1
                     g.setColor(Color.black);
+                    refresh();
                     break;
                 }
                 case 1: {   //properties window
+                	refresh();
+                	for (Vertex v : vertexList) {
+                        v.isDegree = false;
+                    }
                     canvasImage2.getGraphics().clearRect(0, 0, width, height); //clear
                     gP.drawAdjacencyMatrix(canvasImage2.getGraphics(), vertexList, width / 2 + 50, 50);//draw adjacency matrix
                     gP.drawDistanceMatrix(canvasImage2.getGraphics(), vertexList, width / 2 + 50, height / 2 + 50);//draw distance matrix
@@ -494,11 +531,59 @@ public class Canvas {
                     	g.drawString("The graph is acyclic.", 100, height / 2 + 90);
                     }
                     
+                    if(isConnected) {
+                    	g.drawString("The graph is connected.", 100, height / 2 + 100);
+                    } else {
+                    	g.drawString("The graph is not connected.", 100, height / 2 + 100);
+                    }
+                    
+                    if(isTree) {
+                    	g.drawString("The graph is a tree.", 100, height / 2 + 100);
+                    } else {
+                    	g.drawString("The graph is not a tree.", 100, height / 2 + 100);
+                    }
+                    
                     g.drawImage(canvasImage.getScaledInstance(width / 2, height / 2, Image.SCALE_SMOOTH), 0, 0, null); //layer 1
                     g.draw3DRect(0, 0, width / 2, height / 2, true);
                     g.setColor(Color.black);
                     
                     break;
+                }
+                case 2: {	// degree centrality window
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                        v.isDegree = true;
+                        v.isBetweenness = false;
+                        v.wasClicked = false;
+                    }
+                	gP.computeNormalizedDegree(vertexList);
+                	graphic.drawString("Vertex Count=" + vertexList.size() +
+                            "  Edge Count=" + edgeList.size() +
+                            "  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+                    g.drawImage(canvasImage, 0, 0, null); //layer 1
+                    g.setColor(Color.black);
+                    refresh();
+                    break;
+                    
+                }
+                case 3: {	// betweenness centrality window\
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                		v.isDegree = false;
+                        v.isBetweenness = true;
+                        v.wasClicked = false;
+                	}
+                	gP.computeNormalizedBetweenness(vertexList);
+                	graphic.drawString("Vertex Count=" + vertexList.size() +
+                            "  Edge Count=" + edgeList.size() +
+                            "  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+                    g.drawImage(canvasImage, 0, 0, null); //layer 1
+                    g.setColor(Color.black);
+                    refresh();
+                    break;
+                    
                 }
             }
 

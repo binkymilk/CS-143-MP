@@ -28,30 +28,84 @@ public class VertexPair {
 
     public int getShortestDistance() {
         //simple BFS
-        Vector<Vertex> visitedNodes = new Vector<Vertex>();
-        visitedNodes.add(vertex1);      //root node = vertex1
-
-        int counter = 0;
-        while (!visitedNodes.contains(vertex2)) {
-
-            int workingSize = visitedNodes.size();
-            for (int i = counter; i < workingSize; i++) {
-                for (Vertex x : visitedNodes.get(i).connectedVertices) {
-                    if (!visitedNodes.contains(x)) {
-                        visitedNodes.add(x);
-                    }
-                }
-            }
-            counter++;
-            if (workingSize == visitedNodes.size()) // if list not growing, pair is disconnected
-            {
-                return -1;
-            }
-        }
+	        Vector<Vertex> visitedNodes = new Vector<Vertex>();
+	        visitedNodes.add(vertex1);      //root node = vertex1
+	
+	        int counter = 0;
+	        while (!visitedNodes.contains(vertex2)) {
+	
+	            int workingSize = visitedNodes.size();
+	            for (int i = counter; i < workingSize; i++) {
+	                for (Vertex x : visitedNodes.get(i).connectedVertices) {
+	                    if (!visitedNodes.contains(x)) {
+	                        visitedNodes.add(x);
+	                    }
+	                }
+	            }
+	            counter++;
+	            if (workingSize == visitedNodes.size()) // if list not growing, pair is disconnected
+	            {
+	                return -1;
+	            }
+	        }
 
         return counter;
 
     }
+    
+
+    public float getBetweenessCentrality(Vertex vertex) {
+    	Vector<Vector<Vertex>> allPaths = new Vector<Vector<Vertex>>();
+    	int shortestDistance = getShortestDistance();
+    	float noOfPathsWithShortestDistance = 0;
+    	float noOfPathsWithV = 0;
+    	
+    	allPaths = getAllPaths();
+    	
+    	for(int i=0; i<allPaths.size(); i++){
+    		if(allPaths.get(i).size()-1 == shortestDistance){
+    			noOfPathsWithShortestDistance++;
+    			if(allPaths.get(i).contains(vertex)){
+    				noOfPathsWithV++;
+    			}
+    		}
+    	}
+    	return noOfPathsWithV/noOfPathsWithShortestDistance;
+	}
+    
+    private Vector<Vector<Vertex>> getAllPaths() {
+        pathList = new Vector<Vector<Vertex>>();
+        Vector<Vertex> visitedNodes = new Vector<Vertex>();
+
+        //  System.out.println("Vertex-Disjoint Paths for " + vertex1.name + "-" + vertex2.name);
+
+        pathList.removeAllElements();
+        visitedNodes.add(vertex1);
+        recurseAllPaths(vertex1, visitedNodes);
+		return pathList;
+    }
+    
+
+    public void recurseAllPaths(Vertex v, Vector<Vertex> visitedNodes) {
+        if (visitedNodes.contains(vertex2)) {
+            Vector<Vertex> Path = new Vector<Vertex>();
+            Path.setSize(visitedNodes.size());
+            Collections.copy(Path, visitedNodes);
+            pathList.add(Path);
+        } else {
+            for (Vertex x : v.connectedVertices) {
+                if (!visitedNodes.contains(x)) {
+                    int origSize = visitedNodes.size();
+                    visitedNodes.add(x);
+                    recurseAllPaths(x, visitedNodes);
+                    visitedNodes.setSize(origSize);
+                }
+            }
+        }
+
+    }
+    
+    
 
     public void generateVertexDisjointPaths() {
         VertexDisjointContainer.removeAllElements();
@@ -97,6 +151,8 @@ public class VertexPair {
         return Collections.disjoint(setA, setB);
 
     }
+    
+    
 
     public void generatePaths() {
         pathList = new Vector<Vector<Vertex>>();
