@@ -59,6 +59,23 @@ public class GraphProperties {
 			} vList.get(i).setNormalizedBetweenness(betweennessValueOfVertex/normalizationValue);
 		}
 	}
+	
+	/**
+	 * @author Cess
+	 * NEW
+	 * newly added ehe
+	 */
+	public void computeNormalizedCloseness(Vector<Vertex> vList){
+		for(Vertex v1 : vList){
+			float closenessValueOfVertex = 0;
+			for(Vertex v2: vList){
+				if(!v1.equals(v2)){
+					VertexPair vp = new VertexPair(v1,v2);
+					closenessValueOfVertex += vp.getShortestDistance();
+				}
+			} v1.setNormalizedCloseness(1/(closenessValueOfVertex/(vList.size()-1)));
+		}
+	}
 
 	/**
 	 * This function checks if the graph is a tree

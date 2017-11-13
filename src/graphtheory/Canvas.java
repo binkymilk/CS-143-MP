@@ -112,6 +112,10 @@ public class Canvas {
         item = new JMenuItem("Betweenness");
         item.addActionListener(new MenuListener());
         menuOptions4.add(item); 
+
+        item = new JMenuItem("Closeness");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item); 
         
         menuBar.add(menuOptions1);
         menuBar.add(menuOptions);
@@ -383,6 +387,10 @@ public class Canvas {
                 selectedWindow = 3;
                 erase();
             }
+            else if (command.equals("Closeness")) {
+                selectedWindow = 4;
+                erase();
+            }
             
             refresh();
         }
@@ -584,6 +592,25 @@ public class Canvas {
                     refresh();
                     break;
                     
+                }
+                
+                case 4:{
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                		v.isDegree = false;
+                        v.isBetweenness = false;
+                        v.wasClicked = false;
+                        v.isCloseness = true;
+                	}
+                	gP.computeNormalizedCloseness(vertexList);
+                	graphic.drawString("Vertex Count=" + vertexList.size() +
+                            "  Edge Count=" + edgeList.size() +
+                            "  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+                    g.drawImage(canvasImage, 0, 0, null); //layer 1
+                    g.setColor(Color.black);
+                    refresh();
+                    break;
                 }
             }
 

@@ -20,10 +20,12 @@ public class Vertex implements Comparable {
     public Point location;
     public float normalizedDegree;
     public float normalizedBetweenness;
+    public float normalizedCloseness;
     public boolean wasFocused;
     public boolean wasClicked;
     public boolean isDegree;
     public boolean isBetweenness;
+    public boolean isCloseness;
     private int size1 = 30;
     private int size2 = 40;
     public Vector<Vertex> connectedVertices;
@@ -74,6 +76,14 @@ public class Vertex implements Comparable {
     public float getNormalizedBetweenness(){
     	return this.normalizedBetweenness;
     }
+    
+    public void setNormalizedCloseness(float normalizedCloseness){
+    	this.normalizedCloseness = normalizedCloseness;
+    }
+    
+    public float getNormalizedCloseness(){
+    	return this.normalizedCloseness;
+    }
 
     public int compareTo(Object v) {
         if (((Vertex) v).getDegree() > getDegree()) {
@@ -111,9 +121,18 @@ public class Vertex implements Comparable {
             g.setColor(Color.BLACK);
             
         	g.drawString(String.format("%.2f", this.normalizedBetweenness), location.x - 10, location.y + 5);
+        } else if (isCloseness){
+        	int normalized_size2 = size2 + (int)(this.normalizedCloseness*10*2);
+        	int normalized_size1 = size1 + (int)(this.normalizedCloseness*10*2);
+        	g.fillOval(location.x - normalized_size2 / 2, location.y - normalized_size2 / 2, normalized_size2, normalized_size2);
+            g.setColor(Color.WHITE);
+            g.fillOval(location.x - normalized_size1 / 2, location.y - normalized_size1 / 2, normalized_size1, normalized_size1);
+            g.setColor(Color.BLACK);
+            
+        	g.drawString(String.format("%.2f", this.normalizedCloseness), location.x - 10, location.y + 5);
         }
         
-        if(!isBetweenness && !isDegree){
+        if(!isBetweenness && !isDegree && !isCloseness){
 	        g.fillOval(location.x - size2 / 2, location.y - size2 / 2, size2, size2);
 	        g.setColor(Color.WHITE);
 	        g.fillOval(location.x - size1 / 2, location.y - size1 / 2, size1, size1);
