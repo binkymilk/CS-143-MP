@@ -5,6 +5,10 @@ package graphtheory;
  * @author mk
  */
 import javax.swing.*;
+
+import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.Rserve.RserveException;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -112,8 +116,20 @@ public class Canvas {
         item = new JMenuItem("Betweenness");
         item.addActionListener(new MenuListener());
         menuOptions4.add(item); 
-
+        
         item = new JMenuItem("Closeness");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item); 
+        
+        item = new JMenuItem("Eigenvector");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item); 
+        
+        item = new JMenuItem("Bonacich Power");
+        item.addActionListener(new MenuListener());
+        menuOptions4.add(item); 
+        
+        item = new JMenuItem("Katz");
         item.addActionListener(new MenuListener());
         menuOptions4.add(item); 
         
@@ -392,6 +408,19 @@ public class Canvas {
                 erase();
             }
             
+            else if (command.equals("Eigenvector")) {
+            	selectedWindow = 5;
+            	erase();
+            }
+            else if (command.equals("Bonacich Power")) {
+            	selectedWindow = 6;
+            	erase();
+            }
+            
+            else if (command.equals("Katz")) {
+                selectedWindow = 7;
+                erase();
+            }
             refresh();
         }
     }
@@ -564,6 +593,10 @@ public class Canvas {
                         v.isDegree = true;
                         v.isBetweenness = false;
                         v.wasClicked = false;
+                        v.isBonacichPower = false;
+                        v.isCloseness = false;
+                        v.isKatz = false;
+                        v.isEigenvector = false;
                     }
                 	gP.computeNormalizedDegree(vertexList);
                 	graphic.drawString("Vertex Count=" + vertexList.size() +
@@ -582,6 +615,10 @@ public class Canvas {
                 		v.isDegree = false;
                         v.isBetweenness = true;
                         v.wasClicked = false;
+                        v.isCloseness = false;
+                        v.isBonacichPower = false;
+                        v.isEigenvector = false;
+                        v.isKatz = false;
                 	}
                 	gP.computeNormalizedBetweenness(vertexList);
                 	graphic.drawString("Vertex Count=" + vertexList.size() +
@@ -602,6 +639,9 @@ public class Canvas {
                         v.isBetweenness = false;
                         v.wasClicked = false;
                         v.isCloseness = true;
+                        v.isBonacichPower = false;
+                        v.isEigenvector = false;
+                        v.isKatz = false;
                 	}
                 	gP.computeNormalizedCloseness(vertexList);
                 	graphic.drawString("Vertex Count=" + vertexList.size() +
@@ -611,6 +651,83 @@ public class Canvas {
                     g.setColor(Color.black);
                     refresh();
                     break;
+                }
+                
+                case 5:{
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                		v.isDegree = false;
+                		v.isBetweenness = false;
+                		v.wasClicked = false;
+                		v.isCloseness = false;
+                		v.isEigenvector = true;
+                		v.isBonacichPower = false;
+                		v.isKatz = false;
+                	}
+                	int[][] matrix = gP.generateAdjacencyMatrix(vertexList, edgeList);
+                	gP.computeEigenvectorCentrality(vertexList, matrix);
+                	graphic.drawString("Vertex Count=" + vertexList.size() +
+                			"  Edge Count=" + edgeList.size() +
+                			"  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+                	g.drawImage(canvasImage, 0, 0, null); //layer 1
+                	g.setColor(Color.black);
+                	refresh();
+                	break;
+                }
+
+                case 6:{
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                		v.isDegree = false;
+                		v.isBetweenness = false;
+                		v.wasClicked = false;
+                		v.isCloseness = false;
+                		v.isEigenvector = false;
+                		v.isBonacichPower = true;
+                		v.isKatz = false; 
+                	}
+                	int[][] matrix = gP.generateAdjacencyMatrix(vertexList, edgeList);
+                	gP.computeBonacichPower(vertexList, matrix);
+                	graphic.drawString("Vertex Count=" + vertexList.size() +
+                			"  Edge Count=" + edgeList.size() +
+                			"  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+                	g.drawImage(canvasImage, 0, 0, null); //layer 1
+                	g.setColor(Color.black);
+                	refresh();
+                    break;
+                }
+                
+                case 7:{
+                	erase();
+                	refresh();
+                	for (Vertex v : vertexList) {
+                		v.isDegree = false;
+                        v.isBetweenness = false;
+                        v.wasClicked = false;
+                        v.isCloseness = false;
+                        v.isBonacichPower = false;
+                        v.isEigenvector = false;
+                        v.isKatz = true;
+                	}
+                	try {
+						gP.computeKatzCentrality(gP.generateAdjacencyMatrix(vertexList, edgeList), vertexList);
+						graphic.drawString("Vertex Count=" + vertexList.size() +
+	                            "  Edge Count=" + edgeList.size() +
+	                            "  Selected Tool=" + selectedTool, 50, height / 2 + (height * 2) / 5);
+	                    g.drawImage(canvasImage, 0, 0, null); //layer 1
+	                    g.setColor(Color.black);
+	                   
+	                    refresh();
+	                    break;
+					} catch (RserveException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (REXPMismatchException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
                 }
             }
 

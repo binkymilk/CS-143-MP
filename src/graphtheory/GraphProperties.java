@@ -3,7 +3,8 @@
  * and open the template in the editor.
  */
 package graphtheory;
-
+import org.rosuda.REngine.*;
+import org.rosuda.REngine.Rserve.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Collections;
@@ -20,6 +21,133 @@ public class GraphProperties {
 	public int[][] distanceMatrix;
 	public Vector<VertexPair> vpList;
 	public int path[];
+	RConnection c = null;
+	
+	public void computeBonacichPower(Vector<Vertex> vList, int[][] matrix) {
+		try {
+			c = new RConnection();
+			StringBuilder command = new StringBuilder("");
+			
+			command.append("library(igraph)");	
+			command.append("\n");
+			command.append("adjPower = matrix(c(");
+			for(int i = 0; i < matrix.length; i++) {
+				for(int j = 0; j < matrix[i].length; j++) {
+					command.append(matrix[i][j]);
+					command.append(",");
+				}
+				//System.out.println();
+			}
+			if (command.length() > 0) {
+				command.setLength(command.length() - 1);
+			}
+			command.append("), nrow=" + vList.size() + ", ncol=" + vList.size() + ")");
+			command.append("\n");
+		
+			command.append("g = graph_from_adjacency_matrix(adjPower, mode='undirected', weighted=NULL, diag=FALSE)");
+			command.append("\n");
+		
+			command.append("bonacich = power_centrality(g, exponent=0.23)");
+			command.append("\n");
+		
+			double[] bonacichPower = c.eval(command.toString()).asDoubles();
+			c.close();
+			for(int i = 0; i < vList.size(); i++) {
+				vList.get(i).setBonacichPower((float)bonacichPower[i]);
+			}
+     } catch (RserveException e) {
+    	 e.printStackTrace();
+     } catch (REXPMismatchException e) {
+    	 e.printStackTrace();
+     }
+	}
+	
+	public void computeEigenvectorCentrality(Vector<Vertex> vList, int[][] matrix) {
+		try {
+			c = new RConnection();
+			StringBuilder command = new StringBuilder("");
+			
+			command.append("library(igraph)");	
+			command.append("\n");
+			command.append("adj = matrix(c(");
+			for(int i = 0; i < matrix.length; i++) {
+				for(int j = 0; j < matrix[i].length; j++) {
+					command.append(matrix[i][j]);
+					command.append(",");
+				}
+			}
+			if (command.length() > 0) {
+				command.setLength(command.length() - 1);
+			}
+			command.append("), nrow=" + vList.size() + ", ncol=" + vList.size() + ")");
+			command.append("\n");
+			
+			command.append("g = graph_from_adjacency_matrix(adj, mode='undirected', weighted=NULL, diag=FALSE)");
+			command.append("\n");
+			
+			command.append("eigen = eigen_centrality(g, directed=FALSE, weights=NULL, scale=FALSE)$vector");
+			command.append("\n");
+		
+			double[] eigenvector = c.eval(command.toString()).asDoubles();
+			c.close();
+			for(int i = 0; i < vList.size(); i++) {
+				vList.get(i).setEigenvectorCentrality((float)eigenvector[i]);
+			}
+		} catch (RserveException e) {
+			e.printStackTrace();
+		} catch (REXPMismatchException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void computeKatzCentrality(int[][] adjacencyMatrix, Vector<Vertex> vertexList) throws RserveException, REXPMismatchException {
+		c = new RConnection();
+		try {
+			StringBuilder command = new StringBuilder("");
+			command.append("library(igraph)");
+			command.append("\n");
+			command.append("A <- matrix(c(");
+			for(int i=0; i<adjacencyMatrix.length; i++){
+				for(int j=0; j<adjacencyMatrix.length; j++){
+					command.append(adjacencyMatrix[i][j]);
+					command.append(",");
+				}
+			}
+			if (command.length() > 0) {
+				command.setLength(command.length() - 1);
+			}
+			command.append(")," + adjacencyMatrix.length + "," + adjacencyMatrix.length + ", byrow=TRUE)");
+			command.append("\n");
+			
+			command.append("G <- graph_from_adjacency_matrix(A, mode = 'undirected')");
+			command.append("\n");
+			command.append("N <- length(V(G))");
+			command.append("\n");
+			command.append("beta <- rep(1, N)/N");
+			command.append("\n");
+			command.append("A <- as.matrix(G[,])");
+			command.append("\n");
+			command.append("alpha <- 0.25");
+			command.append("\n");
+			command.append("katz <- solve(diag(N) - alpha*A) %*% beta");
+			command.append("\n");
+			command.append("katz");
+			//System.out.println(command.toString());
+			c.eval(command.toString());
+			
+			double[][] result = c.eval(command.toString()).asDoubleMatrix();
+			for(int i=0; i<result.length; i++){
+				vertexList.get(i).setKatz(result[i][0]);
+			}
+		
+		} catch(RserveException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		c.close();
+		return;
+	}
+	
 
 	/**
 	 * This function searches for the vertex with the maximum degree.
@@ -36,14 +164,6 @@ public class GraphProperties {
 		}
 	}
 
-	/**
-	 * @author Cess
-	 * Betweenness
-	 * @param vList
-	 * @param eList
-	 * @return 
-	 * @return
-	 */
 	public void computeNormalizedBetweenness(Vector<Vertex> vList){
 		for (int i=0; i<vList.size(); i++){
 			float betweennessValueOfVertex = 0;
@@ -60,11 +180,6 @@ public class GraphProperties {
 		}
 	}
 	
-	/**
-	 * @author Cess
-	 * NEW
-	 * newly added ehe
-	 */
 	public void computeNormalizedCloseness(Vector<Vertex> vList){
 		for(Vertex v1 : vList){
 			float closenessValueOfVertex = 0;
@@ -76,6 +191,7 @@ public class GraphProperties {
 			} v1.setNormalizedCloseness(1/(closenessValueOfVertex/(vList.size()-1)));
 		}
 	}
+
 
 	/**
 	 * This function checks if the graph is a tree

@@ -5,7 +5,6 @@
 package graphtheory;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Point;
 import java.util.Vector;
 import java.awt.Graphics;
@@ -14,6 +13,7 @@ import java.awt.Graphics;
  *
  * @author mk
  */
+@SuppressWarnings("rawtypes")
 public class Vertex implements Comparable {
 
     public String name;
@@ -21,11 +21,17 @@ public class Vertex implements Comparable {
     public float normalizedDegree;
     public float normalizedBetweenness;
     public float normalizedCloseness;
+    public float eigenvectorCentrality;
+    public float bonacichPower;
+    public double katz;
     public boolean wasFocused;
     public boolean wasClicked;
     public boolean isDegree;
     public boolean isBetweenness;
     public boolean isCloseness;
+    public boolean isEigenvector;
+    public boolean isBonacichPower;
+    public boolean isKatz;
     private int size1 = 30;
     private int size2 = 40;
     public Vector<Vertex> connectedVertices;
@@ -61,6 +67,14 @@ public class Vertex implements Comparable {
         return connectedVertices.size();
     }
     
+    public void setBonacichPower(float bonacichPower) {
+    	this.bonacichPower = bonacichPower;
+    }
+    
+    public void setEigenvectorCentrality(float eigenvectorCentrality) {
+    	this.eigenvectorCentrality = eigenvectorCentrality;
+    }
+    
     public void setNormalizedDegree(float normalizedDegree) {
     	this.normalizedDegree = normalizedDegree;
     }
@@ -83,6 +97,14 @@ public class Vertex implements Comparable {
     
     public float getNormalizedCloseness(){
     	return this.normalizedCloseness;
+    }
+    
+    public void setKatz(double result){
+    	this.katz = result;
+    }
+    
+    public double getKatz(){
+    	return this.katz;
     }
 
     public int compareTo(Object v) {
@@ -130,9 +152,38 @@ public class Vertex implements Comparable {
             g.setColor(Color.BLACK);
             
         	g.drawString(String.format("%.2f", this.normalizedCloseness), location.x - 10, location.y + 5);
+        } else if (isEigenvector) {
+        	int normalized_size2 = size2 + (int)(this.eigenvectorCentrality*10*2);
+        	int normalized_size1 = size1 + (int)(this.eigenvectorCentrality*10*2);
+        	g.fillOval(location.x - normalized_size2 / 2, location.y - normalized_size2 / 2, normalized_size2, normalized_size2);
+        	g.setColor(Color.WHITE);
+        	g.fillOval(location.x - normalized_size1 / 2, location.y - normalized_size1 / 2, normalized_size1, normalized_size1);
+        	g.setColor(Color.BLACK);
+            
+        	g.drawString(String.format("%.2f", this.eigenvectorCentrality), location.x - 10, location.y + 5);
+        }
+        else if (isBonacichPower) {
+        	int normalized_size2 = size2 + (int)(this.bonacichPower*10*2);
+        	int normalized_size1 = size1 + (int)(this.bonacichPower*10*2);
+        	g.fillOval(location.x - normalized_size2 / 2, location.y - normalized_size2 / 2, normalized_size2, normalized_size2);
+        	g.setColor(Color.WHITE);
+        	g.fillOval(location.x - normalized_size1 / 2, location.y - normalized_size1 / 2, normalized_size1, normalized_size1);
+        	g.setColor(Color.BLACK);
+	            
+        	g.drawString(String.format("%.2f", this.bonacichPower), location.x - 10, location.y + 5);
+        }
+        else if(isKatz){
+        	int normalized_size2 = size2 + (int)(this.katz*10*2);
+        	int normalized_size1 = size1 + (int)(this.katz*10*2);
+        	g.fillOval(location.x - normalized_size2 / 2, location.y - normalized_size2 / 2, normalized_size2, normalized_size2);
+            g.setColor(Color.WHITE);
+            g.fillOval(location.x - normalized_size1 / 2, location.y - normalized_size1 / 2, normalized_size1, normalized_size1);     
+            g.setColor(Color.BLACK);
+            
+        	g.drawString(String.format("%.2f", this.katz), location.x - 10, location.y + 5);
         }
         
-        if(!isBetweenness && !isDegree && !isCloseness){
+        if(!isBetweenness && !isDegree && !isCloseness && !isEigenvector && !isBonacichPower && !isKatz){
 	        g.fillOval(location.x - size2 / 2, location.y - size2 / 2, size2, size2);
 	        g.setColor(Color.WHITE);
 	        g.fillOval(location.x - size1 / 2, location.y - size1 / 2, size1, size1);
